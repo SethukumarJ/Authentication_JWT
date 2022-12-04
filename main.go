@@ -1,11 +1,23 @@
 package main
 
 import (
-	"fmt"
+	"jwt/initializers"
+
+	"github.com/gin-gonic/gin"
 )
 
+func init() {
 
-func main () {
+	initializers.LoadEnvVariables()
+}
 
-	fmt.Println("main.go created")
+func main() {
+	r := gin.Default()
+	r.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "pong",
+		})
+	})
+	r.Run() // listen and serve on 0.0.0.0:8080
+
 }
