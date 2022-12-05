@@ -1,11 +1,23 @@
 package main
 
 import (
-	"fmt"
+	"jwt/controllers"
+	"jwt/initializers"
+
+	"github.com/gin-gonic/gin"
 )
 
+func init() {
 
-func main () {
+	initializers.LoadEnvVariables()
+	initializers.ConnectToDb()
+	initializers.SyncDatabase()
+}
 
-	fmt.Println("main.go created")
+func main() {
+	r := gin.Default()
+	r.POST("/signup", controllers.Signup)
+	r.POST("/login", controllers.Login)
+	r.Run() // listen and serve on 0.0.0.0:8080
+
 }
