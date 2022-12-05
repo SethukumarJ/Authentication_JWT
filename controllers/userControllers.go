@@ -73,39 +73,46 @@ func Login(c *gin.Context) {
 	if user.ID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"message": "invalid credentials",
-		}) }
-
-		//Check if the password is correct
-
-		err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"message": "invalid credentials",
-			})
-			return
-		}
-
-		//Generate a jwt token
-		// Create a new token object, specifying signing method and the claims
-		// you would like it to contain.
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"sub": user.ID,
-			"exp": time.Now().Add(time.Hour * 24).Unix(),
 		})
+	}
 
-		// Sign and get the complete encoded token as a string using the secret
-		tokenString, err := token.SignedString([]byte(os.Getenv("SECRET_KEY")))	
+	//Check if the password is correct
 
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "error signing token",
-			})
-			return
-		}
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "invalid credentials",
+		})
+		return
+	}
 
-		//respond
-		c.SetSameSite(http.SameSiteLaxMode)
-		c.SetCookie("token", tokenString, 3600, "/", "localhost", false, true)
+	//Generate a jwt token
+	// Create a new token object, specifying signing method and the claims
+	// you would like it to contain.
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub": user.ID,
+		"exp": time.Now().Add(time.Hour * 24).Unix(),
+	})
+
+	// Sign and get the complete encoded token as a string using the secret
+	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET_KEY")))
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "error signing token",
+		})
+		return
+	}
+
+	//respond
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie("token", tokenString, 3600, "", "", false, true)
 
 }
 
+func Validate(c *gin.Context) {
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Logged IN",
+	})
+}
