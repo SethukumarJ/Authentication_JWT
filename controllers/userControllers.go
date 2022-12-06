@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"jwt/initializers"
 	"jwt/models"
 	"net/http"
@@ -12,77 +13,94 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func Signup(c *gin.Context) {
+func UserSignup(c *gin.Context) {
+	c.HTML(http.StatusOK, "usersignup.html", nil)
+}
+
+func UserPostSignup(c *gin.Context) {
+
+	usernameFromForm := c.Request.FormValue("username")
+	passwordFromForm := c.Request.FormValue("password")
 
 	var user models.User
-	//GEt email and password from request body
-	var body struct {
+	//GEt email and password from the form
+	var form struct {
 		Email    string
 		Password string
 	}
 
-	if c.Bind(&body) != nil {
-		c.JSON(400, gin.H{
-			"message": "invalid json",
-		})
-		return
-	}
+	form.Email = usernameFromForm
+	form.Password = passwordFromForm
 	//hash the password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), 10)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(form.Password), 10)
 	if err != nil {
-		c.JSON(500, gin.H{
-			"message": "error hashing password",
-		})
+		fmt.Println("error hashing password")
+		c.Redirect(303, "/userSignup")
 		return
 	}
 
 	//Save the user in the database
-	user = models.User{Email: body.Email, Password: string(hashedPassword)}
+	user = models.User{Email: form.Email, Password: string(hashedPassword)}
 	result := initializers.DB.Create(&user)
 
 	if result.Error != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "failed to create user",
-		})
+		c.Redirect(303, "/userSignup")
+		fmt.Println("error saving user")
+		return
 	}
 
 	//respond
-	c.JSON(http.StatusOK, gin.H{})
+	c.HTML(http.StatusOK, "userlogin.html", nil)
 }
 
-func Login(c *gin.Context) {
 
+
+
+func UserLogin (c *gin.Context) {
+	c.Writer.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+
+	ok := welcomeUserStatus
+	if ok {
+		c.Redirect(303, "/welcomeUser")
+		return
+	}
+	c.HTML(http.StatusOK, "userlogin.html", nil)
+
+}
+func UserPostLogin(c *gin.Context) {
+
+	c.Writer.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 	//GEt email and password from request body
-	var body struct {
+
+	usernameFromForm := c.Request.FormValue("username")
+	passwordFromForm := c.Request.FormValue("password")
+
+
+	var form struct {
 		Email    string
 		Password string
 	}
 
-	if c.Bind(&body) != nil {
-		c.JSON(400, gin.H{
-			"message": "invalid json",
-		})
-		return
-	}
+	form.Email = usernameFromForm
+	form.Password = passwordFromForm
 
 	//Check if the user exists in the database
 	var user models.User
 
-	initializers.DB.First(&user, "email = ?", body.Email)
+	initializers.DB.First(&user, "email = ?", form.Email)
 
 	if user.ID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"message": "invalid credentials",
-		})
+		c.Redirect(303, "/userLogin")
+		fmt.Println("invalid user")
+		return
 	}
 
 	//Check if the password is correct
 
-	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.Password))
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"message": "invalid credentials",
-		})
+		c.Redirect(303, "/userLogin")
+		fmt.Println("invalid user")
 		return
 	}
 
@@ -98,6 +116,7 @@ func Login(c *gin.Context) {
 	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET_KEY")))
 
 	if err != nil {
+		fmt.Println("error signing token")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "error signing token",
 		})
@@ -107,12 +126,23 @@ func Login(c *gin.Context) {
 	//respond
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie("token", tokenString, 3600, "", "", false, true)
+	c.HTML(http.StatusOK, "welcomeUser.html", nil)
 
 }
 
-func Validate(c *gin.Context) {
+func UserLogout(c *gin.Context) {
+	c.Writer.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie("token", "", -1, "", "", false, true)
+	c.HTML(http.StatusOK, "userlogin.html", nil)
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Logged IN",
-	})
 }
+
+
+var welcomeUserStatus = false
+func WelcomeUser(c *gin.Context){
+
+	
+	welcomeUserStatus = true
+}
+
