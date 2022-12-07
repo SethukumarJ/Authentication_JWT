@@ -13,9 +13,16 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+
+
+// ===================================================USER ROUTES===========================================
+
+//===================USER SIGNUP=====================
 func UserSignup(c *gin.Context) {
+
 	c.HTML(http.StatusOK, "usersignup.html", nil)
 }
+//===================POST SIGNUP=====================
 
 func UserPostSignup(c *gin.Context) {
 
@@ -25,11 +32,11 @@ func UserPostSignup(c *gin.Context) {
 	var user models.User
 	//GEt email and password from the form
 	var form struct {
-		Email    string
+		Name    string
 		Password string
 	}
 
-	form.Email = usernameFromForm
+	form.Name = usernameFromForm
 	form.Password = passwordFromForm
 	//hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(form.Password), 10)
@@ -40,7 +47,7 @@ func UserPostSignup(c *gin.Context) {
 	}
 
 	//Save the user in the database
-	user = models.User{Email: form.Email, Password: string(hashedPassword)}
+	user = models.User{Name: form.Name, Password: string(hashedPassword)}
 	result := initializers.DB.Create(&user)
 
 	if result.Error != nil {
@@ -55,39 +62,42 @@ func UserPostSignup(c *gin.Context) {
 
 
 
+//===================USER LOGIN=====================
 
 func UserLogin (c *gin.Context) {
-	c.Writer.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 
-	ok := welcomeUserStatus
+	c.Writer.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	
+	ok := userLoggedStatus
 	if ok {
-		c.Redirect(303, "/welcomeUser")
+		c.Redirect(303, "/userProfile")
 		return
 	}
 	c.HTML(http.StatusOK, "userlogin.html", nil)
-
 }
+//===================POST LOIGN=====================
 func UserPostLogin(c *gin.Context) {
 
 	c.Writer.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-	//GEt email and password from request body
+	
+	//GEt name and password from request body
 
 	usernameFromForm := c.Request.FormValue("username")
 	passwordFromForm := c.Request.FormValue("password")
 
 
 	var form struct {
-		Email    string
-		Password string
+		Name    	string
+		Password 	string
 	}
 
-	form.Email = usernameFromForm
+	form.Name = usernameFromForm
 	form.Password = passwordFromForm
 
 	//Check if the user exists in the database
 	var user models.User
 
-	initializers.DB.First(&user, "email = ?", form.Email)
+	initializers.DB.First(&user, "name = ?", form.Name)
 
 	if user.ID == 0 {
 		c.Redirect(303, "/userLogin")
@@ -126,23 +136,45 @@ func UserPostLogin(c *gin.Context) {
 	//respond
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie("token", tokenString, 3600, "", "", false, true)
-	c.HTML(http.StatusOK, "welcomeUser.html", nil)
+	c.HTML(http.StatusOK, "userprofile.html", nil)
 
 }
+
+
+//===================LOGOUT=====================
 
 func UserLogout(c *gin.Context) {
 	c.Writer.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie("token", "", -1, "", "", false, true)
 	c.HTML(http.StatusOK, "userlogin.html", nil)
+	userLoggedStatus = false
 
 }
 
+//===================HOME PAGE=====================
 
-var welcomeUserStatus = false
-func WelcomeUser(c *gin.Context){
+var userLoggedStatus = false
+func UserLogged(c *gin.Context){
 
+	fmt.Println("useerLOgged function called and userLoggedStatus is: set to true")
+	userLoggedStatus = true
+}
+
+
+
+//===================USER PROFILE=====================
+
+func UserProfile(c *gin.Context) {
 	
-	welcomeUserStatus = true
+	c.Writer.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	
+	ok := userLoggedStatus
+	if ok {
+		c.HTML(http.StatusOK, "userprofile.html", nil)
+		return
+	}
+	c.Redirect(303, "/userLogin")
 }
+
 
