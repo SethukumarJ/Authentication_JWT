@@ -1,4 +1,19 @@
 # Authentication_JWT
+The jwt authentication was implemented. By injecting jwt into the cookies, it was made in the proper manner. Gin is the framework, and Postgres is the database. Implementing authentication with a single access token will be beneficial. Beginning with the following project, jwt authentication with access and refresh tokens will be implemented.
+
+#Topics-
+jwt
+crud
+authentication
+
+#Resources-
+Gin
+jwt
+gorm
+postgres
+postman
+github
+golang
 
 
 
