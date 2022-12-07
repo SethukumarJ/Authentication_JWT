@@ -16,12 +16,13 @@ func init() {
 }
 
 func main() {
-	
 
 	router := gin.Default()
 	router.Use(gin.Logger())
 
 	routes.UserAuthRoutes(router)
+	routes.AdminAuthRoutes(router)
+	
 
 	router.Run()
 

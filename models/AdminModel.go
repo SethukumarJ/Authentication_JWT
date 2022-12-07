@@ -4,8 +4,10 @@ import (
 	"gorm.io/gorm"
 )
 
-type User struct {
+type Admin struct {
+	
 	gorm.Model
 	Name    string `json:"name" gorm:"unique"`
 	Password string `json:"password"`
+
 }

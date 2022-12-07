@@ -18,7 +18,9 @@
           <div class="cola" id="navbarSupportedContent">
             
             <form class="d-flex">
-              <button class="btn btn-primary" type="submit"><a href="/logoutadmin" style="text-decoration: none;color:white;"> Logout</a></button>
+              <button class="btn btn-primary" type="submit"><a href="/logoutadmin
+                
+                " style="text-decoration: none;color:white;"> Logout</a></button>
             </form>
           </div>
         </div>
@@ -42,6 +44,9 @@
                                
         </tr>
         </thead>
+
+
+        
         <tbody>
        
         
@@ -50,13 +55,15 @@
           <tr>
             <th scope="row">{{$index}}</th>
             <td>{{.}}</td>
-            <td> <a class="btn btn-danger" href="/delete/{{.}}">DELETE</a></td>            
+            <td> <a class="btn btn-danger" href="/deleteUser/{{.}}">DELETE</a></td>            
              <td>
                  <form action="/update/{{.}}" method="post">
              <input type="text" name="updatedata" value="{{.}}">   
             <button type="submit"> Update</button>
             </form></td>           
-        </tr>{{end}}
+        </tr>
+        
+        {{end}}
           {{end}}
 
       
@@ -68,7 +75,7 @@
       <div class="container">
       <div class="row">
           <h2>Create a New User</h2>
-        <form action="/create" method="post">
+        <form action="/createUser" method="post">
         <div class="col">
   
 <input type="text" name="username" class="form-control" placeholder="username" aria-label="username" required>
