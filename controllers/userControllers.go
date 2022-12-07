@@ -20,6 +20,14 @@ import (
 //===================USER SIGNUP=====================
 func UserSignup(c *gin.Context) {
 
+	c.Writer.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+
+	ok := userLoggedStatus
+	if ok {
+		c.Redirect(303, "/userProfile")
+		return
+	}
+
 	c.HTML(http.StatusOK, "usersignup.html", nil)
 }
 //===================POST SIGNUP=====================
@@ -100,8 +108,10 @@ func UserPostLogin(c *gin.Context) {
 	initializers.DB.First(&user, "name = ?", form.Name)
 
 	if user.ID == 0 {
+		userLoggedStatus= false
 		c.Redirect(303, "/userLogin")
 		fmt.Println("invalid user")
+		
 		return
 	}
 
@@ -109,8 +119,10 @@ func UserPostLogin(c *gin.Context) {
 
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.Password))
 	if err != nil {
+		userLoggedStatus= false
 		c.Redirect(303, "/userLogin")
 		fmt.Println("invalid user")
+		
 		return
 	}
 
@@ -136,6 +148,7 @@ func UserPostLogin(c *gin.Context) {
 	//respond
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie("token", tokenString, 3600, "", "", false, true)
+	userLoggedStatus = true
 	c.HTML(http.StatusOK, "userprofile.html", nil)
 
 }

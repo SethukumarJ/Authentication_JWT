@@ -16,5 +16,6 @@ func AdminAuthRoutes(r *gin.Engine) {
 	r.GET("/logoutadmin", controllers.AdminLogout)
 	r.POST("/createUser", controllers.CreateUser)
 	r.GET("/deleteUser/:name", controllers.DeleteUser)
+	r.POST("/updateUser/:name", controllers.UpdateUser)
 	
 }
