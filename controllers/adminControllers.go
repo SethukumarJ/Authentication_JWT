@@ -206,3 +206,17 @@ func DeleteUser(c *gin.Context) {
 	fmt.Println("user deleted")
 
 }
+// ===================Update USER FROM ADMIN PANEL=====================
+
+func UpdateUser(c *gin.Context) {
+	fmt.Println("updating user")
+
+
+updateData := c.Request.FormValue("updatedName")
+	var user models.User
+	name := c.Param("name")
+	
+	initializers.DB.Model(&user).Where("name=?", name).Update("name", updateData)
+	fmt.Println("user updated")
+	c.Redirect(303, "/adminProfile")
+}

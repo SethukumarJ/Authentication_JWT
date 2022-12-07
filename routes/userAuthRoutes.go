@@ -13,7 +13,7 @@ func UserAuthRoutes(r *gin.Engine) {
 	r.GET("/userSignup", controllers.UserSignup)
 	r.POST("/userPostSignup", controllers.UserPostSignup)
 	r.GET("/userLogin", controllers.UserLogin)
-	r.POST("/userPostLogin", controllers.UserPostLogin, controllers.UserLogged)
+	r.POST("/userPostLogin", controllers.UserPostLogin)
 	r.GET("/userProfile", middleware.RequireAuth,controllers.UserLogged, controllers.UserProfile)
 	r.GET("/userLogout", controllers.UserLogout)
 }
